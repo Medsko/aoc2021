@@ -43,6 +43,8 @@ data class Coordinate(val x: Int, val y: Int) : Comparable<Coordinate> {
 
     operator fun rangeTo(endInclusive: Coordinate) = CoordinateRange(this, endInclusive)
 
+    operator fun plus(other: Coordinate): Coordinate = Coordinate(this.x + other.x, this.y + other.y)
+
     class CoordinateRange(override val start: Coordinate, override val endInclusive: Coordinate) :
         ClosedRange<Coordinate>, Iterable<Coordinate> {
 
@@ -52,28 +54,18 @@ data class Coordinate(val x: Int, val y: Int) : Comparable<Coordinate> {
         }
     }
 
-    class CoordinateIterator(start: Coordinate, private val endInclusive: Coordinate) :
-        Iterator<Coordinate> {
+    class CoordinateIterator(start: Coordinate, endInclusive: Coordinate) : Iterator<Coordinate> {
+        private val direction = Coordinate(endInclusive.x.compareTo(start.x), endInclusive.y.compareTo(start.y))
+        private val endExclusive = endInclusive + direction
         var current = start
 
         override fun hasNext(): Boolean {
-            return current <= endInclusive
+            return current != endExclusive
         }
 
         override fun next(): Coordinate {
-            if (!hasNext()) throw IllegalStateException("End of range has been reached!")
             val next = current
-            current = if (!current.isHorizontalOrVertical(endInclusive)) {
-                val nextX = if (current.x < endInclusive.x) current.x + 1 else current.x - 1
-                val nextY = if (current.y < endInclusive.y) current.y + 1 else current.y - 1
-                // Diagonal, increment both
-                Coordinate(nextX, nextY)
-            } else {
-                // Vertical, increment y
-                if (current.x == endInclusive.x) Coordinate(current.x, current.y + 1)
-                // Horizontal, increment x
-                else Coordinate(current.x + 1, current.y)
-            }
+            current += direction
 
             return next
         }
