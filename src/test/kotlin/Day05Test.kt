@@ -21,10 +21,40 @@ internal class Day05Test {
     }
 
     @Test
+    internal fun part2TestRun() {
+        val coordinatePairs = hydrothermalVenter.parseInput(getTestInput())
+        val occurrences = coordinatePairs
+            .flatMap { it.first..it.second }.count { it == Coordinate(4, 4) }
+        assertEquals(3, occurrences)
+        assertEquals(12, hydrothermalVenter.part2(getTestInput()))
+    }
+
+    @Test
+    internal fun part2ForReal() {
+        assertEquals(17787, hydrothermalVenter.part2(getRealInput()))
+    }
+
+    @Test
     internal fun coordinateRange() {
         val expected = listOf(Coordinate(1, 4), Coordinate(2, 4), Coordinate(3, 4))
         val range = Coordinate(3, 4)..Coordinate(1, 4)
         assertEquals(expected, range.toCollection(ArrayList()))
+    }
+
+    @Test
+    internal fun coordinateRangeDiagonalParallel() {
+        val expected = listOf(Coordinate(1, 1), Coordinate(2, 2), Coordinate(3, 3))
+        val range = Coordinate(1, 1)..Coordinate(3, 3)
+        assertEquals(expected, range.toCollection(ArrayList()))
+    }
+
+    @Test
+    internal fun coordinateRangeDiagonal() {
+        val expected = listOf(Coordinate(9, 7), Coordinate(8, 8), Coordinate(7, 9))
+        val range = Coordinate(9, 7)..Coordinate(7, 9)
+        val rangeAsList = range.toCollection(ArrayList())
+        rangeAsList.reverse()
+        assertEquals(expected, rangeAsList)
     }
 
     @Test

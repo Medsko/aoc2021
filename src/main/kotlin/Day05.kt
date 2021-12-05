@@ -10,6 +10,14 @@ class Day05 {
         return points.filter { it.value > 1 }.count()
     }
 
+    fun part2(input: List<String>): Int {
+        val coordinatePairs = parseInput(input)
+        coordinatePairs.flatMap { it.first..it.second }
+            .forEach { coordinate -> points[coordinate] = (points.getOrPut(coordinate) { 0 }) + 1 }
+
+        return points.filter { it.value > 1 }.count()
+    }
+
     fun parseInput(input: List<String>): List<Pair<Coordinate, Coordinate>> {
         return input.map {
             val parts = it.split("\\s+".toRegex())
@@ -55,8 +63,18 @@ data class Coordinate(val x: Int, val y: Int) : Comparable<Coordinate> {
         override fun next(): Coordinate {
             if (!hasNext()) throw IllegalStateException("End of range has been reached!")
             val next = current
-            current = if (current.x == endInclusive.x) Coordinate(current.x, current.y + 1)
-            else Coordinate(current.x + 1, current.y)
+            current = if (!current.isHorizontalOrVertical(endInclusive)) {
+                val nextX = if (current.x < endInclusive.x) current.x + 1 else current.x - 1
+                val nextY = if (current.y < endInclusive.y) current.y + 1 else current.y - 1
+                // Diagonal, increment both
+                Coordinate(nextX, nextY)
+            } else {
+                // Vertical, increment y
+                if (current.x == endInclusive.x) Coordinate(current.x, current.y + 1)
+                // Horizontal, increment x
+                else Coordinate(current.x + 1, current.y)
+            }
+
             return next
         }
     }
