@@ -1,36 +1,88 @@
 class Day09 {
 
-    fun part1(lines: List<String>): Int {
-        val lowPoints = determineLowPoints(lines)
+    private val green = "\u001b[0;32m"
+    private val blue = "\u001b[0;34m"
+
+    fun part1(lines: List<List<Int>>): Int {
+        val lowPoints = determineLowPointsByPositions(lines)
         return lowPoints.sumOf { it + 1 }
     }
 
-    fun determineLowPoints(lines: List<String>): MutableList<Int> {
-        var previous: List<Int>? = null
+    fun part2(lines: List<List<Int>>): Int {
+        val allBasins = determineBasins(lines)
+        printBasins(lines, allBasins.flatten())
+        return calculateAnswerPart2(allBasins)
+    }
+
+    private fun calculateAnswerPart2(basins: List<Set<Pair<Int, Int>>>): Int {
+        return basins.map { it.size }.sorted().subList(basins.size - 3, basins.size)
+            .reduce { acc, next -> acc * next}
+    }
+
+    private fun determineBasins(lines: List<List<Int>>): MutableList<Set<Pair<Int, Int>>> {
+        val lowPositions = determineLowPositions(lines)
+        val allBasins = mutableListOf<Set<Pair<Int, Int>>>()
+        for (lowPosition in lowPositions) {
+            val higherPositions = mutableSetOf<Pair<Int, Int>>()
+            determineAdjacentHighPoints(lowPosition, lines, higherPositions)
+            allBasins.add(higherPositions)
+        }
+        return allBasins
+    }
+
+    private fun printBasins(lines: List<List<Int>>, basins: List<Pair<Int, Int>>) {
+        for (y in lines.indices) {
+            for (x in lines[y].indices) {
+                if (basins.contains(Pair(y, x))) {
+                    print(blue + lines[y][x])
+                } else {
+                    print(green + lines[y][x])
+                }
+            }
+            println()
+        }
+    }
+
+    fun determineAdjacentHighPoints(position: Pair<Int, Int>, lines: List<List<Int>>, higher: MutableSet<Pair<Int, Int>>) {
+        val higherPoints = mutableListOf<Pair<Int, Int>>()
+        for (yMod in -1..1) {
+            for (xMod in -1..1) {
+                if (xMod != 0 && yMod != 0) continue   // Disregard diagonal positions
+                val yIndex = position.first + yMod
+                val xIndex = position.second + xMod
+                val point = lines[position.first][position.second]
+                if (xIndex == -1 || yIndex == -1 || yIndex == lines.size || xIndex == lines[yIndex].size) continue
+                if (lines[yIndex][xIndex] == 9 || point >= lines[yIndex][xIndex]) continue
+                higherPoints.add(Pair(yIndex, xIndex))
+            }
+        }
+        for (higherPoint in higherPoints) {
+            determineAdjacentHighPoints(higherPoint, lines, higher)
+        }
+        higher.add(position)
+    }
+
+    fun determineLowPointsByPositions(lines: List<List<Int>>): List<Int> {
+        val lowPositions = determineLowPositions(lines)
         val lowPoints = mutableListOf<Int>()
-        for ((index, line) in lines.withIndex()) {
-            val next = if (index == lines.size - 1) null else toIntList(lines[index + 1])
-            lowPoints.addAll(determineLowPointsForLine(line, previous, next))
-            previous = toIntList(line)
+        for (lowPosition in lowPositions) {
+            lowPoints.add(lines[lowPosition.first][lowPosition.second])
         }
         return lowPoints
     }
 
-    private fun determineLowPointsForLine(current: String, previous: List<Int>?, next: List<Int>?): List<Int> {
-        val points = toIntList(current)
-        val lowPoints = mutableListOf<Int>()
-        for ((index, point) in points.withIndex()) {
-            if (index != 0 && point >= points[index-1]) continue
-            if (index != points.size -1 && point >= points[index+1]) continue
-            if (previous != null && point >= previous[index]) continue
-            if (next != null && point >= next[index]) continue
-            lowPoints.add(point)
+    fun determineLowPositions(lines: List<List<Int>>): List<Pair<Int, Int>> {
+        val lowPoints = mutableListOf<Pair<Int, Int>>()
+        for (yIndex in lines.indices) {
+            for (xIndex in 0 until lines[yIndex].size) {
+                val point = lines[yIndex][xIndex]
+                if (xIndex != 0 && point >= lines[yIndex][xIndex-1]) continue
+                if (xIndex != lines[yIndex].size - 1 && point >= lines[yIndex][xIndex+1]) continue
+                if (yIndex != 0 && point >= lines[yIndex-1][xIndex]) continue
+                if (yIndex != lines.size - 1 && point >= lines[yIndex+1][xIndex]) continue
+                lowPoints.add(Pair(yIndex, xIndex))
+            }
         }
         return lowPoints
     }
-
-    private fun toIntList(numbers: String) = numbers.toCharArray().map { Character.getNumericValue(it) }
-
-
-
 }
