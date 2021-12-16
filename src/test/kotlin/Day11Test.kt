@@ -21,9 +21,13 @@ internal class Day11Test {
 
     @Test
     internal fun part2TestRun() {
+        val input = getTestInputAsIntsForDay(11)
+        assertEquals(195, drOcto.part1(input, 200))
     }
 
     @Test
     internal fun part2ForReal() {
+        val input = getRealInputAsIntsForDay(11)
+        assertEquals(348, drOcto.part1(input, 2000))
     }
 }

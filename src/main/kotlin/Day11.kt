@@ -11,6 +11,7 @@ class Day11 {
         for (i in 1..steps) {
             flashes += updateOctopi(octopi)
             printOctopi(i, octopi)
+            if (octopi.flatten().all { it == 0 }) return i
         }
         return flashes
     }
